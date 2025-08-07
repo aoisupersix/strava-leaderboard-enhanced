@@ -1,0 +1,76 @@
+name: Package
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [master]
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set version
+        id: version
+        run: |
+          REPOSITORY=$(echo ${{ github.repository }} | sed -e "s#.*/##")
+          VERSION=$(echo ${{ github.ref }} | sed -e "s#refs/tags/v##g")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "filename=$REPOSITORY-$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: npm install and build
+        run: |
+          npm install
+          npm run build
+
+      - name: Packaging
+        run: zip -r ${{ steps.version.outputs.filename }}.zip dist
+
+      - name: "Build changelog"
+        id: build_changelog
+        uses: mikepenz/release-changelog-builder-action@v3.4.0
+        with:
+          configurationJson: |
+            {
+              "template": "#{{CHANGELOG}}\n\n<details>\n<summary>Uncategorized</summary>\n\n#{{UNCATEGORIZED}}\n</details>",
+              "categories": [
+                {
+                    "title": "## ✨ New features",
+                    "labels": ["newfeatures"]
+                },
+                {
+                    "title": "## 🩹 Improvements & Bug fixes",
+                    "labels": ["improvement", "bug"]
+                },
+                {
+                    "title": "## 📦 Others",
+                    "labels": ["documentation", "dependencies"]
+                }
+              ]
+            }
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: ${{ steps.build_changelog.outputs.changelog }}
+          files: ${{ steps.version.outputs.filename }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

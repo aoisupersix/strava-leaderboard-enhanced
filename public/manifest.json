@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Strava Leaderboard　Enhanced",
+  "description": "Enhanced Strava leaderboard with advanced filtering, sorting, and custom column features. Add age groups, weight categories, power-to-weight ratios, and more to segment leaderboards. Perfect for competitive analysis and detailed performance insights.",
+  "version": "0.0.1",
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://strava.com/segments/*",
+        "https://www.strava.com/segments/*"
+      ],
+      "js": [
+        "js/content.js"
+      ]
+    }
+  ]
+}
