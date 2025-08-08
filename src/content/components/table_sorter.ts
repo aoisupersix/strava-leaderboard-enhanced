@@ -16,7 +16,7 @@ export class TableSorter {
         this.currentSortColumn = null
         this.isAscending = true
 
-        // 動的に列情報を取得
+        // Dynamically retrieve column information
         this.initializeColumns()
         this.initializeColumnVisibility()
 
@@ -27,7 +27,7 @@ export class TableSorter {
     }
 
     /**
-     * テーブルヘッダーから列名を取得して初期化
+     * Initialize column names from table headers
      */
     private initializeColumns(): void {
         const thead = this.table?.querySelector('thead')
@@ -43,7 +43,7 @@ export class TableSorter {
     }
 
     /**
-     * 列の表示・非表示設定を初期化（全て表示）
+     * Initialize column visibility settings (all visible by default)
      */
     private initializeColumnVisibility(): void {
         this.columnVisibility = {}
@@ -183,7 +183,7 @@ export class TableSorter {
         this.columnControlPanel = document.createElement('div')
         this.columnControlPanel.className = 'column-control-panel'
 
-        // 動的に列のチェックボックスを生成
+        // Dynamically generate column checkboxes
         const columnCheckboxes = this.columns
             .map((columnName, index) => {
                 const isChecked = this.columnVisibility[columnName]
@@ -195,7 +195,7 @@ export class TableSorter {
 
         this.columnControlPanel.innerHTML = `
             <div class="column-control-header">
-                <span>列の表示・非表示</span>
+                <span>Column Visibility</span>
                 <button class="column-control-toggle">▼</button>
             </div>
             <div class="column-control-content">
@@ -203,8 +203,8 @@ export class TableSorter {
                     ${columnCheckboxes}
                 </div>
                 <div class="column-control-actions">
-                    <button class="column-control-all">全て選択</button>
-                    <button class="column-control-none">全て解除</button>
+                    <button class="column-control-all">Select All</button>
+                    <button class="column-control-none">Deselect All</button>
                 </div>
             </div>
         `
@@ -404,7 +404,7 @@ export class TableSorter {
 
         const headers = headerRow.querySelectorAll('th')
 
-        // 全ての列にソート機能を追加
+        // Add sorting functionality to all columns
         this.columns.forEach((columnName, index) => {
             if (headers[index]) {
                 const header = headers[index] as HTMLElement
@@ -474,7 +474,7 @@ export class TableSorter {
     }
 
     /**
-     * セルの値から適切な比較値を取得
+     * Get appropriate comparison value from cell
      */
     private getCellValue(
         row: HTMLTableRowElement,
@@ -485,9 +485,9 @@ export class TableSorter {
 
         const text = cell.textContent?.trim() || ''
 
-        // ランク列（0列目）の特別処理 - アバター検出
+        // Special handling for rank column (column 0) - avatar detection
         if (columnIndex === 0) {
-            // アバターがある場合は1位として扱う
+            // Treat rows with avatars as rank 1
             const hasAvatar =
                 cell.querySelector('.avatar') !== null ||
                 cell.querySelector('img') !== null ||
@@ -499,13 +499,13 @@ export class TableSorter {
                 return 1
             }
 
-            // テキストがある場合は数値として処理
+            // Process as numeric value if text exists
             if (text && text !== '-') {
                 const rankValue = parseInt(text)
                 if (!isNaN(rankValue)) return rankValue
             }
 
-            // テキストもアバターもない場合は、行のインデックスから推定
+            // If neither text nor avatar exists, estimate from row index
             const tbody = row.closest('tbody')
             if (tbody) {
                 const rows = tbody.querySelectorAll('tr')
@@ -514,24 +514,24 @@ export class TableSorter {
             }
         }
 
-        // 空の値の場合
+        // Handle empty values
         if (!text || text === '-' || text === '') return ''
 
-        // 数値判定（整数または小数点）
+        // Numeric detection (integer or decimal)
         const numericMatch = text.match(/^[\d,]+\.?\d*/)
         if (numericMatch) {
             const numericValue = parseFloat(numericMatch[0].replace(/,/g, ''))
             if (!isNaN(numericValue)) return numericValue
         }
 
-        // 日付判定（年月日形式）
+        // Date detection (year-month-day format)
         const dateMatch = text.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/)
         if (dateMatch) {
             const [, year, month, day] = dateMatch
             return new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
         }
 
-        // 時間形式判定（mm:ss または h:mm:ss）
+        // Time format detection (mm:ss or h:mm:ss)
         const timeMatch = text.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/)
         if (timeMatch) {
             const [, hours, minutes, seconds = '0'] = timeMatch
@@ -542,7 +542,7 @@ export class TableSorter {
             )
         }
 
-        // その他は文字列として扱う
+        // Treat everything else as string
         return text.toLowerCase()
     }
 
@@ -561,18 +561,18 @@ export class TableSorter {
 
             let result = 0
 
-            // 空の値は最後に配置
+            // Place empty values at the end
             if (aValue === '' && bValue === '') return 0
             if (aValue === '') return 1
             if (bValue === '') return -1
 
-            // 型が同じ場合の比較
+            // Compare values of the same type
             if (typeof aValue === typeof bValue) {
                 if (aValue < bValue) result = -1
                 else if (aValue > bValue) result = 1
                 else result = 0
             } else {
-                // 型が違う場合は文字列比較
+                // String comparison for different types
                 const aStr = String(aValue)
                 const bStr = String(bValue)
                 result = aStr.localeCompare(bStr)
