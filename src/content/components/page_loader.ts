@@ -78,7 +78,7 @@ export class PageLoader {
     }
 
     private createButtonContainer(): void {
-        // ボタンコンテナを作成
+        // Create button container
         const buttonContainer = document.createElement('div')
         buttonContainer.className = 'page-loader-button-container'
         buttonContainer.style.display = 'flex'
@@ -91,7 +91,7 @@ export class PageLoader {
     }
 
     private createAndInsertButton(): void {
-        // コンテナが存在しない場合は作成
+        // Create container if it doesn't exist
         let buttonContainer = document.querySelector(
             '.page-loader-button-container'
         ) as HTMLElement
@@ -103,7 +103,7 @@ export class PageLoader {
         }
 
         this.loadAllPagesButton = document.createElement('button')
-        this.loadAllPagesButton.textContent = '全ページ読み込み'
+        this.loadAllPagesButton.textContent = 'Load All Pages'
         this.loadAllPagesButton.className = 'btn btn-primary load-all-pages-btn'
         this.loadAllPagesButton.style.margin = '0'
         this.loadAllPagesButton.style.padding = '8px 16px'
@@ -122,17 +122,17 @@ export class PageLoader {
             this.loadAllPages()
         })
 
-        // ボタンをコンテナに追加
+        // Add button to container
         if (buttonContainer) {
             buttonContainer.appendChild(this.loadAllPagesButton)
         }
     }
 
     /**
-     * CSV出力ボタンを作成して追加
+     * Create and add CSV export button
      */
     private createCsvExportButton(): void {
-        // コンテナが存在しない場合は作成
+        // Create container if it doesn't exist
         let buttonContainer = document.querySelector(
             '.page-loader-button-container'
         ) as HTMLElement
@@ -144,7 +144,7 @@ export class PageLoader {
         }
 
         this.csvExportButton = document.createElement('button')
-        this.csvExportButton.textContent = 'CSV出力'
+        this.csvExportButton.textContent = 'Export CSV'
         this.csvExportButton.className = 'btn btn-secondary csv-export-btn'
         this.csvExportButton.style.margin = '0'
         this.csvExportButton.style.padding = '8px 16px'
@@ -161,65 +161,65 @@ export class PageLoader {
             this.exportToCSVDirectly()
         })
 
-        // CSV出力ボタンをコンテナに追加
+        // Add CSV export button to container
         if (buttonContainer) {
             buttonContainer.appendChild(this.csvExportButton)
         }
     }
 
     /**
-     * テーブル内容を変更せずに直接CSV出力を実行
+     * Execute CSV export directly without changing table content
      */
     private exportToCSVDirectly(): void {
-        // CSV出力を実行（テーブル内容は変更しない）
+        // Execute CSV export (don't change table content)
         this.exportToCSV()
     }
 
     /**
-     * 全データを読み込んでからCSV出力を実行
+     * Load all data first, then execute CSV export
      */
     private async exportToCSVWithFullData(): Promise<void> {
-        // 全ページデータがない場合は先に全ページ読み込みを実行
+        // If no all pages data exists, load all pages first
         if (!this.hasAllPagesData()) {
             const totalPages = DOMUtils.getTotalPages()
             if (totalPages > 1) {
-                // ボタンを無効化
+                // Disable button
                 if (this.csvExportButton) {
-                    this.csvExportButton.textContent = '全データ読み込み中...'
+                    this.csvExportButton.textContent = 'Loading all data...'
                     this.csvExportButton.disabled = true
                 }
 
                 try {
                     await this.loadAllPages()
                 } catch (error) {
-                    console.error('CSV出力: 全ページ読み込みエラー', error)
-                    alert('全ページの読み込み中にエラーが発生しました。')
+                    console.error('CSV export: All pages loading error', error)
+                    alert('An error occurred while loading all pages.')
                     return
                 } finally {
-                    // ボタンを元に戻す
+                    // Restore button
                     if (this.csvExportButton) {
-                        this.csvExportButton.textContent = 'CSV出力'
+                        this.csvExportButton.textContent = 'Export CSV'
                         this.csvExportButton.disabled = false
                     }
                 }
             }
         }
 
-        // CSV出力を実行
+        // Execute CSV export
         this.exportToCSV()
     }
 
     /**
-     * テーブルデータをCSV形式で出力
+     * Export table data in CSV format
      */
     private exportToCSV(): void {
         let dataToExport: LeaderboardRecord[] = []
 
-        // 全ページデータがある場合はそれを使用、なければ現在のページのデータを使用
+        // Use all pages data if available, otherwise use current page data
         if (this.hasAllPagesData()) {
             dataToExport = this.allPagesData
         } else {
-            // 現在のページのデータを取得
+            // Get current page data
             const tbody = this.table.querySelector('tbody')
             if (tbody) {
                 const rows = tbody.querySelectorAll('tr')
@@ -237,15 +237,15 @@ export class PageLoader {
 
         if (dataToExport.length === 0) {
             alert(
-                '出力するデータがありません。全ページ読み込みを実行してからお試しください。'
+                'No data to export. Please run "Load All Pages" first and try again.'
             )
             return
         }
 
-        // テーブルヘッダーから動的に列名を取得
+        // Get column names dynamically from table headers
         const headers = this.getTableHeaders()
 
-        // CSVデータを作成
+        // Create CSV data
         const csvRows = [headers.join(',')]
 
         dataToExport.forEach((record) => {
@@ -253,7 +253,7 @@ export class PageLoader {
             csvRows.push(row.join(','))
         })
 
-        // CSVファイルを作成してダウンロード
+        // Create and download CSV file
         const csvContent = csvRows.join('\n')
         const blob = new Blob(['\uFEFF' + csvContent], {
             type: 'text/csv;charset=utf-8;',
@@ -263,7 +263,7 @@ export class PageLoader {
         const url = URL.createObjectURL(blob)
         link.setAttribute('href', url)
 
-        // ファイル名を生成（セグメント名と日時を含む）
+        // Generate filename (including segment name and timestamp)
         const segmentName =
             document.title.split(' - ')[0] || 'strava-leaderboard'
         const timestamp = new Date()
@@ -279,40 +279,40 @@ export class PageLoader {
         document.body.removeChild(link)
         URL.revokeObjectURL(url)
 
-        // 成功メッセージを表示
+        // Show success message
         this.showCsvExportSuccess(dataToExport.length, filename)
     }
 
     /**
-     * テーブルヘッダーから列名を取得
+     * Get column names from table headers
      */
     private getTableHeaders(): string[] {
         const thead = this.table?.querySelector('thead')
         if (!thead) {
-            // フォールバック用のデフォルトヘッダー
+            // Fallback default headers
             return [
-                '順位',
-                '名前',
-                '日付',
-                'スピード',
-                '心拍数',
-                '平均上昇速度',
-                'パワー',
-                'タイム',
+                'Rank',
+                'Name',
+                'Date',
+                'Speed',
+                'Heart Rate',
+                'Average Climbing Speed',
+                'Power',
+                'Time',
             ]
         }
 
         const headerRow = thead.querySelector('tr')
         if (!headerRow) {
             return [
-                '順位',
-                '名前',
-                '日付',
-                'スピード',
-                '心拍数',
-                '平均上昇速度',
-                'パワー',
-                'タイム',
+                'Rank',
+                'Name',
+                'Date',
+                'Speed',
+                'Heart Rate',
+                'Average Climbing Speed',
+                'Power',
+                'Time',
             ]
         }
 
@@ -320,14 +320,14 @@ export class PageLoader {
         return Array.from(headers)
             .map((th) => {
                 const text = th.textContent?.trim() || ''
-                // ソートインジケーター「↕」を除去
+                // Remove sort indicator "↕"
                 return text.replace(/↕/g, '').trim()
             })
-            .filter((header) => header !== '') // 空のヘッダーは除外
+            .filter((header) => header !== '') // Exclude empty headers
     }
 
     /**
-     * レコードをCSV行形式にフォーマット
+     * Format record to CSV row format
      */
     private formatRecordForCSV(record: LeaderboardRecord): string[] {
         const values: (string | number)[] = [
@@ -341,7 +341,7 @@ export class PageLoader {
             record.time,
         ]
 
-        // CSV形式に適した文字列処理
+        // String processing suitable for CSV format
         return values.map((value) => {
             if (value === null || value === undefined) {
                 return ''
@@ -349,13 +349,13 @@ export class PageLoader {
 
             const stringValue = String(value)
 
-            // カンマ、引用符、改行が含まれている場合は引用符で囲む
+            // Wrap in quotes if contains comma, quote, or newline
             if (
                 stringValue.includes(',') ||
                 stringValue.includes('"') ||
                 stringValue.includes('\n')
             ) {
-                // 内部の引用符をエスケープ
+                // Escape internal quotes
                 const escapedValue = stringValue.replace(/"/g, '""')
                 return `"${escapedValue}"`
             }
@@ -365,7 +365,7 @@ export class PageLoader {
     }
 
     /**
-     * CSV出力成功メッセージを表示
+     * Show CSV export success message
      */
     private showCsvExportSuccess(recordCount: number, filename: string): void {
         const successDiv = document.createElement('div')
@@ -384,8 +384,8 @@ export class PageLoader {
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="font-size: 20px;">✅</span>
                 <div>
-                    <div style="font-weight: bold; margin-bottom: 5px;">CSV出力完了</div>
-                    <div style="font-size: 14px;">${recordCount}件のデータを出力しました</div>
+                    <div style="font-weight: bold; margin-bottom: 5px;">CSV Export Complete</div>
+                    <div style="font-size: 14px;">Exported ${recordCount} records</div>
                     <div style="font-size: 12px; opacity: 0.9;">${filename}</div>
                 </div>
             </div>
@@ -393,7 +393,7 @@ export class PageLoader {
 
         document.body.appendChild(successDiv)
 
-        // 3秒後に自動で消去
+        // Auto remove after 3 seconds
         setTimeout(() => {
             successDiv.style.animation = 'slideOutRight 0.3s ease-in'
             setTimeout(() => {
@@ -535,7 +535,7 @@ export class PageLoader {
         this.loadingAborted = false
 
         if (this.loadAllPagesButton) {
-            this.loadAllPagesButton.textContent = '読み込み中...'
+            this.loadAllPagesButton.textContent = 'Loading...'
             this.loadAllPagesButton.disabled = true
         }
 
@@ -588,13 +588,13 @@ export class PageLoader {
             return this.allPagesData
         } catch (error) {
             console.error('Error during page loading:', error)
-            alert('全ページの読み込み中にエラーが発生しました。')
+            alert('An error occurred while loading all pages.')
             return []
         } finally {
             this.isLoadingAllPages = false
             this.loadingAborted = false
             if (this.loadAllPagesButton) {
-                this.loadAllPagesButton.textContent = '全ページ読み込み'
+                this.loadAllPagesButton.textContent = 'Load All Pages'
                 this.loadAllPagesButton.disabled = false
             }
         }
@@ -615,7 +615,7 @@ export class PageLoader {
         progressDiv.style.textAlign = 'center'
         progressDiv.style.boxShadow = '0 4px 20px rgba(0,0,0,0.5)'
         progressDiv.innerHTML = `
-            <div style="font-size: 16px; margin-bottom: 15px;">全ページを読み込み中...</div>
+            <div style="font-size: 16px; margin-bottom: 15px;">Loading all pages...</div>
             <div class="progress-bar" style="margin: 10px 0; width: 300px; height: 20px; background: #333; border-radius: 10px;">
                 <div class="progress-fill" style="width: 0%; height: 100%; background: #fc4c02; border-radius: 10px; transition: width 0.3s;"></div>
             </div>
@@ -628,7 +628,7 @@ export class PageLoader {
                 border-radius: 4px;
                 cursor: pointer;
                 font-size: 14px;
-            ">キャンセル</button>
+            ">Cancel</button>
         `
 
         // Add cancel functionality
@@ -641,7 +641,7 @@ export class PageLoader {
             progressDiv.remove()
 
             if (this.loadAllPagesButton) {
-                this.loadAllPagesButton.textContent = '全ページ読み込み'
+                this.loadAllPagesButton.textContent = 'Load All Pages'
                 this.loadAllPagesButton.disabled = false
             }
         })
@@ -877,16 +877,16 @@ export class PageLoader {
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="font-size: 20px;">✅</span>
                 <div>
-                    <div style="font-weight: bold; margin-bottom: 5px;">全ページ読み込み完了</div>
-                    <div style="font-size: 14px;">${this.allPagesData.length}件のエントリーを読み込みました</div>
-                    <div style="font-size: 12px; opacity: 0.9;">※ ソート機能で全データを並び替えできます</div>
+                    <div style="font-weight: bold; margin-bottom: 5px;">All Pages Loaded</div>
+                    <div style="font-size: 14px;">Loaded ${this.allPagesData.length} entries</div>
+                    <div style="font-size: 12px; opacity: 0.9;">※ You can sort all data using the sort function</div>
                 </div>
             </div>
         `
 
         document.body.appendChild(infoDiv)
 
-        // 5秒後に自動で消去
+        // Auto remove after 5 seconds
         setTimeout(() => {
             infoDiv.style.animation = 'slideOutRight 0.3s ease-in'
             setTimeout(() => {
