@@ -1,4 +1,5 @@
 import { LeaderboardRecord, SortConfig } from '../../models'
+import * as chrono from 'chrono-node'
 
 export class TableSorter {
     private table: HTMLTableElement | null = null
@@ -517,18 +518,17 @@ export class TableSorter {
         // Handle empty values
         if (!text || text === '-' || text === '') return ''
 
+        // Date detection (year-month-day format) - check this before numeric
+        const dateMatch = chrono.ja.parseDate(text) ?? chrono.parseDate(text)
+        if (dateMatch) {
+            return dateMatch
+        }
+
         // Numeric detection (integer or decimal)
         const numericMatch = text.match(/^[\d,]+\.?\d*/)
         if (numericMatch) {
             const numericValue = parseFloat(numericMatch[0].replace(/,/g, ''))
             if (!isNaN(numericValue)) return numericValue
-        }
-
-        // Date detection (year-month-day format)
-        const dateMatch = text.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/)
-        if (dateMatch) {
-            const [, year, month, day] = dateMatch
-            return new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
         }
 
         // Time format detection (mm:ss or h:mm:ss)
@@ -558,7 +558,6 @@ export class TableSorter {
                 b.element as HTMLTableRowElement,
                 this.currentSort.column
             )
-
             let result = 0
 
             // Place empty values at the end
@@ -566,8 +565,11 @@ export class TableSorter {
             if (aValue === '') return 1
             if (bValue === '') return -1
 
-            // Compare values of the same type
-            if (typeof aValue === typeof bValue) {
+            // Date comparison using getTime()
+            if (aValue instanceof Date && bValue instanceof Date) {
+                result = aValue.getTime() - bValue.getTime()
+            } else if (typeof aValue === typeof bValue) {
+                // Compare values of the same type
                 if (aValue < bValue) result = -1
                 else if (aValue > bValue) result = 1
                 else result = 0
