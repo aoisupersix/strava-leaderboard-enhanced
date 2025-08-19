@@ -45,6 +45,6 @@
   },
   "dependencies": {
     "chrono-node": "^2.8.4",
-    "zod": "^4.0.15"
+    "zod": "^4.0.17"
   }
 }
