@@ -24,7 +24,7 @@
   "homepage": "https://github.com/aoisupersix/strava-leaderboard-enhanced#readme",
   "devDependencies": {
     "@eslint/js": "^9.32.0",
-    "@types/chrome": "0.1.22",
+    "@types/chrome": "0.1.24",
     "@types/jest": "^30.0.0",
     "copy-webpack-plugin": "^13.0.0",
     "coveralls": "^3.1.1",
